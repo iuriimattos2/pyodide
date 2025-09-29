@@ -1,45 +1,35 @@
 // ==UserScript==
-// @name         Pyodide Demo
+// @name         Pyodide Demo (Violentmonkey, CDN)
 // @namespace    http://example.com
-// @version      0.1
-// @description  Demo Pyodide in a userscript
+// @version      0.2
+// @description  Demo Pyodide in a userscript using official CDN
 // @author       ryanowa
-// @match        http://example.com
-// @grant        GM.xmlHttpRequest
-// @grant        GM.addElement
-// @require      https://github.com/tubaman/pyodide/releases/download/v0.21.3-greasemonkey-20240909/pyodide.js
+// @match        *://example.com/*
+// @grant        none
+// @require      https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js
 // ==/UserScript==
 
-(function() {
-    'use strict';
+(async function () {
+  'use strict';
 
-    function waitForPyodideScript() {
-        return new Promise(resolve => {
-            let interval = setInterval(() => {
-                if (typeof loadPyodide !== undefined) {
-                    console.log("Looks like loadPyodide is available");
-                    clearInterval(interval);
-                    resolve();
-                }
-            }, 100);
-        });
-    }
+  console.log('Starting Pyodide Demo (using @require from CDN).');
 
-    async function main() {
-        console.log("waiting for pyodide script");
-        await waitForPyodideScript();
-        console.log("loading pyodide");
+  if (typeof loadPyodide !== 'function') {
+    console.error('loadPyodide is not available.');
+    return;
+  }
 
-        var pyodide = await loadPyodide({indexURL: "https://github.com/tubaman/pyodide/releases/download/v0.21.3-greasemonkey-20240909/"});
-        console.log("pyodide loaded");
+  try {
+    const pyodide = await loadPyodide({
+      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/'
+    });
+    console.log('pyodide loaded');
 
-        await pyodide.runPythonAsync(`
-          import sys
-          print("python version: %s" % sys.version)
-        `)
-
-    }
-
-    main();
-
+    await pyodide.runPythonAsync(`
+      import sys
+      print("python version: %s" % sys.version)
+    `);
+  } catch (err) {
+    console.error('Failed to load or run pyodide:', err);
+  }
 })();
